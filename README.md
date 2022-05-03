@@ -10,6 +10,7 @@
 
 - Select specific JSON schema per buffer
 - Display the in-use schema
+- Kubernetes + Schema Store support (No CRDs yet)
 
 ## 📦 Installation
 

@@ -8,7 +8,9 @@ M.defaults = {
     result = {
       {
         name = "Kubernetes",
-        uri = "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v" .. kubernetes_version .. "-standalone-strict/all.json"
+        uri = "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v"
+          .. kubernetes_version
+          .. "-standalone-strict/all.json",
       },
     },
   },

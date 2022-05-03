@@ -17,7 +17,7 @@ local yaml_schema = function(opts)
   results = vim.tbl_deep_extend(
     "force",
     results.result,
-    require('yaml-companion.config').options.schemas.result
+    require("yaml-companion.config").options.schemas.result
   )
 
   opts = opts or {}

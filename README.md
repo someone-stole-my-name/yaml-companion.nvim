@@ -18,8 +18,8 @@ Install the plugin and load the `telescope` extension with your preferred packag
 **Packer**
 
 ```lua
-use({
-  "someone-stole-my-name/yaml-companion.nvim"
+use {
+  "someone-stole-my-name/yaml-companion.nvim",
   requires = {
     { "nvim-lua/plenary.nvim"},
     { "nvim-telescope/telescope.nvim" },
@@ -27,7 +27,7 @@ use({
   config = function()
     require("telescope").load_extension("yaml_schema")
   end,
-})
+}
 ```
 
 ## 🚀 Usage

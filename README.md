@@ -12,7 +12,7 @@
 ## ✨ Features
 
 - Select specific JSON schema per buffer
-- Display the in-use schema
+- Get the in-use schema
 - Kubernetes + Schema Store support (No CRDs yet)
 
 ## 📦 Installation
@@ -34,9 +34,75 @@ use {
 }
 ```
 
-## 🚀 Usage
+## ⚙️  Configuration
+
+**yaml-companion** comes with the following defaults
 
 ```lua
-local cfg = require("yaml-companion").setup()
+{
+  schemas = {
+    result = {
+      -- Additional known schemas
+      {
+        name = "Kubernetes",
+        uri = "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.22.4-standalone-strict/all.json",
+      },
+    },
+  },
+  -- Pass any additional options that will be merged in the final LSP config
+  lspconfig = {
+    flags = {
+      debounce_text_changes = 150,
+    },
+    settings = {
+      redhat = { telemetry = { enabled = false } },
+      yaml = {
+        validate = true,
+        format = { enable = true },
+        hover = true,
+        schemaStore = {
+          enable = true,
+          url = "https://www.schemastore.org/api/json/catalog.json",
+        },
+        schemaDownload = { enable = true },
+        schemas = {},
+        trace = { server = "debug" },
+      },
+    },
+  },
+}
+```
+
+```lua
+local cfg = require("yaml-companion").setup({
+  -- Add any options here, or leave empty to use the default settings
+  -- lspconfig = {
+  --   cmd = {"yaml-language-server"}
+  -- },
+})
 require("lspconfig")["yamlls"].setup(cfg)
+```
+
+## 🚀 Usage
+
+### Select a schema for the current buffer
+
+No mappings included, you need to map it yourself or call it manually:
+
+```
+:Telescope yaml_schema
+```
+
+### Get the schema name for the current buffer
+
+You can show the current schema in your statusline using a function like:
+
+```lua
+function foo()
+  local schema = require('yaml-companion').get_buf_schema(0)
+  if schema then
+    return schema.result[1].name
+  end
+  return ''
+end
 ```

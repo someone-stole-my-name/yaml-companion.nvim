@@ -1,5 +1,8 @@
 # yaml-companion.nvim [![Build](https://github.com/someone-stole-my-name/yaml-companion.nvim/actions/workflows/main.yml/badge.svg)](https://github.com/someone-stole-my-name/yaml-companion.nvim/actions/workflows/main.yml)
 
+![telescope](./resources/telescope.png)
+![statusbar](./resources/statusbar.png)
+
 ## ⚡️ Requirements
 
 - [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)

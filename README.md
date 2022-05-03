@@ -13,7 +13,7 @@
 
 - Select specific JSON schema per buffer
 - Get the in-use schema
-- Kubernetes + Schema Store support (No CRDs yet)
+- Kubernetes + Schema Store support (No CRDs)
 
 ## 📦 Installation
 
@@ -36,7 +36,7 @@ use {
 
 ## ⚙️  Configuration
 
-**yaml-companion** comes with the following defaults
+**yaml-companion** comes with the following defaults:
 
 ```lua
 {
@@ -99,10 +99,10 @@ You can show the current schema in your statusline using a function like:
 
 ```lua
 function foo()
-  local schema = require('yaml-companion').get_buf_schema(0)
+  local schema = require("yaml-companion").get_buf_schema(0)
   if schema then
     return schema.result[1].name
   end
-  return ''
+  return ""
 end
 ```

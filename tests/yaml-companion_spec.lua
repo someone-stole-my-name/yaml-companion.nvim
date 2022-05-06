@@ -77,5 +77,69 @@ describe("schema detection:", function()
     local expect = schema
     local result = require("yaml-companion").get_buf_schema(0)
     assert.are.same(expect, result)
+    vim.api.nvim_buf_delete(0, { force = true })
+  end)
+
+  it("should not detect Kubernetes", function()
+    assert(buf("---\nkind: Deployment\n", "yaml", "playbook.yml"))
+    local expect = {
+      result = {
+        {
+          description = "Ansible playbook files",
+          name = "Ansible Playbook",
+          uri = "https://raw.githubusercontent.com/ansible-community/schemas/main/f/ansible.json#/definitions/playbook",
+        },
+      },
+    }
+    wait_until(function()
+      local result = require("yaml-companion").get_buf_schema(0)
+      if
+        result.result[1].name ~= require("yaml-companion.context").default_schema().result[1].name
+      then
+        return true
+      end
+    end)
+    local result = require("yaml-companion").get_buf_schema(0)
+    assert.are.same(expect, result)
+    vim.api.nvim_buf_delete(0, { force = true })
+  end)
+
+  it("should detect Kubernetes", function()
+    assert(
+      buf(
+        "apiVersion: apps/v1\nkind: DaemonSet\nspec:\n  template:\n    spec:\n      containers:\n        - name:\n",
+        "yaml",
+        "foo.yml"
+      )
+    )
+    local expect = require("yaml-companion.config").options.schemas
+    wait_until(function()
+      local result = require("yaml-companion").get_buf_schema(0)
+      if
+        result.result[1].name ~= require("yaml-companion.context").default_schema().result[1].name
+      then
+        return true
+      end
+    end)
+    local result = require("yaml-companion").get_buf_schema(0)
+    assert.are.same(expect, result)
+  end)
+
+  it("should match expected Kubernetes diagnostic", function()
+    local expect = {
+      'Missing property "selector".',
+      'Incorrect type. Expected "string".',
+    }
+
+    wait_until(function()
+      if #vim.diagnostic.get() == 2 then
+        return true
+      end
+    end)
+
+    for index, value in ipairs(vim.diagnostic.get()) do
+      assert.are.same(expect[index], value.message)
+    end
+    vim.api.nvim_buf_delete(0, { force = true })
   end)
 end)

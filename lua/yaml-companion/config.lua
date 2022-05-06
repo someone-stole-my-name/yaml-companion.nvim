@@ -1,14 +1,17 @@
 local M = {}
 
-local kubernetes_version = "1.22.4"
+local kubernetes_version = require("yaml-companion.kubernetes.version")
 
 M.defaults = {
+  -- Enabled Kubernetes file autodetection
+  kubernetes_autodetection_enabled = true,
+
   -- Additional known schemas
   schemas = {
     result = {
       {
         name = "Kubernetes",
-        uri = "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v"
+        uri = "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/"
           .. kubernetes_version
           .. "-standalone-strict/all.json",
       },
@@ -19,6 +22,7 @@ M.defaults = {
     flags = {
       debounce_text_changes = 150,
     },
+    single_file_support = true,
     settings = {
       redhat = { telemetry = { enabled = false } },
       yaml = {

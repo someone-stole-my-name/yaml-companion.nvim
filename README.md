@@ -1,7 +1,7 @@
 # yaml-companion.nvim [![Build](https://github.com/someone-stole-my-name/yaml-companion.nvim/actions/workflows/main.yml/badge.svg)](https://github.com/someone-stole-my-name/yaml-companion.nvim/actions/workflows/main.yml)
 
-![telescope](./resources/telescope.png)
-![statusbar](./resources/statusbar.png)
+![telescope](./resources/screenshots/telescope.png)
+![statusbar](./resources/screenshots/statusbar.png)
 
 ## ⚡️ Requirements
 
@@ -13,7 +13,7 @@
 
 - Select specific JSON schema per buffer
 - Get the in-use schema
-- Kubernetes + Schema Store support (No CRDs)
+- Kubernetes autodetection + Schema Store support 
 
 ## 📦 Installation
 

@@ -2,24 +2,6 @@ local M = {}
 
 local sync_timeout = 1000
 
--- notify the yamlls attached to {bufnr} that we support schema selection
----@param bufnr number
----@return boolean
-M.support_schema_selection = function(bufnr)
-  local client = require("yaml-companion.lsp.util").client(bufnr)
-  if client then
-    return client.notify("yaml/supportSchemaSelection", { true })
-  end
-end
-
--- notify the yamlls attached to {bufnr} that it should use the given {config}
-M.workspace_didchangeconfiguration = function(bufnr, config)
-  local client = require("yaml-companion.lsp.util").client(bufnr)
-  if client then
-    return client.notify("workspace/didChangeConfiguration", { settings = config })
-  end
-end
-
 -- get all known schemas by the yamlls attached to {bufnr}
 ---@param bufnr number
 ---@return table

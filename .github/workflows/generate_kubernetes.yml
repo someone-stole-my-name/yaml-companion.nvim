@@ -1,0 +1,12 @@
+---
+name: K8s resources
+on:
+  schedule:
+    - cron: '0 * * * *'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: cd $GITHUB_WORKSPACE && make docker-generate-kubernetes
+      - uses: peter-evans/create-pull-request@v4

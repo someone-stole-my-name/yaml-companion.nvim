@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-ENV HADOLINT_VERSION=2.10.0
+ARG HADOLINT_VERSION=2.10.0
 ARG NEOVIM_VERSION=0.7.0
 
 WORKDIR /tmp/nvim
@@ -20,6 +20,9 @@ RUN apk --no-cache add \
   libtool \
   make \
   npm \
+  perl \
+  perl-json-xs \
+  perl-lwp-protocol-https \
   pkgconf \
   rust \
   unzip

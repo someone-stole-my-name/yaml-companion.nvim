@@ -10,8 +10,6 @@ end
 M.ctxs = {}
 
 M.setup = function(bufnr, client)
-  lsp.support_schema_selection(bufnr)
-
   local timer = vim.loop.new_timer()
 
   local state = {
@@ -21,19 +19,60 @@ M.setup = function(bufnr, client)
     timer = timer,
   }
 
+  -- This timer runs periodically until
+  -- it updates the context state for the buffer
   timer:start(
     1000,
     1000,
     vim.schedule_wrap(function()
+      -- if we get an schema from the LSP
       local schema = lsp.get_jsonschema(bufnr)
-      if
-        schema
-        and schema.result
-        and schema.result[1]
-        and schema.result[1].name
-        and schema.result[1].uri
+      local options = require("yaml-companion.config").options
+
+      if schema and schema.result and schema.result[1] and schema.result[1].uri then
+        -- if LSP returns a name that means it came from SchemaStore
+        -- and we can use it right away
+        if schema.result[1].name then
+          M.ctxs[bufnr].schema = schema
+          timer:close()
+
+          -- if it returned something without a name it means it came from our own
+          -- internal schema table and we have to loop through it to get the name
+        else
+          for _, option_schema in ipairs(options.schemas.result) do
+            if option_schema.uri == schema.result[1].uri then
+              M.ctxs[bufnr].schema = {
+                result = {
+                  { name = option_schema.name, uri = option_schema.uri },
+                },
+              }
+              timer:close()
+            end
+          end
+        end
+
+        -- if LSP is not using any schema and bufnr looks like kubernetes
+      elseif
+        options.kubernetes_autodetection_enabled
+        and require("yaml-companion.kubernetes").looks_like_kubernetes(bufnr)
       then
-        M.ctxs[bufnr].schema = schema
+        -- TODO: loop defined schemas and find kubernetes|Kubernetes
+        -- instead of assuming first item
+        if
+          options.schemas
+          and options.schemas.result
+          and options.schemas.result[1]
+          and options.schemas.result[1].name
+          and options.schemas.result[1].uri
+          and options.schemas.result[1].name == "Kubernetes"
+        then
+          M.schema(bufnr, {
+            result = {
+              { name = options.schemas.result[1].name, uri = options.schemas.result[1].uri },
+            },
+          })
+          timer:close()
+        end
       end
     end)
   )
@@ -72,7 +111,7 @@ M.schema = function(bufnr, schema)
       settings,
       { yaml = { schemas = override } }
     )
-    lsp.workspace_didchangeconfiguration(bufnr, settings)
+    client.workspace_did_change_configuration(client.config.settings)
   end
 
   return M.ctxs[bufnr].schema

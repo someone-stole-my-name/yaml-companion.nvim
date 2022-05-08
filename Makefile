@@ -1,7 +1,8 @@
 NEOVIM_VERSION=0.7.0
+KUBERNETES_VERSION=1.22.4
 
 lint:
-	hadolint tests/Dockerfile
+	hadolint Dockerfile
 	stylua -c .
 
 test: lint
@@ -12,8 +13,16 @@ packer:
  ~/.local/share/nvim/site/pack/packer/start/packer.nvim
 	nvim --headless --noplugin -u tests/packer.lua -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
 
+generate-kubernetes: generate_kubernetes_version generate_kubernetes_resources
+
+generate_kubernetes_resources:
+	perl resources/scripts/generate_kubernetes_resources.pl > lua/yaml-companion/kubernetes/resources.lua
+
+generate_kubernetes_version:
+	perl resources/scripts/generate_kubernetes_version.pl ${KUBERNETES_VERSION} > lua/yaml-companion/kubernetes/version.lua
+
 docker-build:
-	docker build -t ci --build-arg NEOVIM_VERSION=${NEOVIM_VERSION} -f tests/Dockerfile .
+	docker build -t ci --build-arg NEOVIM_VERSION=${NEOVIM_VERSION} -f Dockerfile .
 
 docker-%: docker-build
 	docker run \

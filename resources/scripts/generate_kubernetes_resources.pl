@@ -47,5 +47,5 @@ foreach my $version (@versions[-10..-1]) {
 
 print("-- AUTOMATICALLY GENERATED\n-- DO NOT EDIT\n");
 print("return {\n  \"");
-print(join("\",\n  \"", keys %kinds));
+print(join("\",\n  \"", sort(keys %kinds)));
 print("\",\n}\n");

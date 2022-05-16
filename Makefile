@@ -16,10 +16,10 @@ packer:
 generate-kubernetes: generate_kubernetes_version generate_kubernetes_resources
 
 generate_kubernetes_resources:
-	perl resources/scripts/generate_kubernetes_resources.pl > lua/yaml-companion/kubernetes/resources.lua
+	perl resources/scripts/generate_kubernetes_resources.pl > lua/yaml-companion/builtin/kubernetes/resources.lua
 
 generate_kubernetes_version:
-	perl resources/scripts/generate_kubernetes_version.pl ${KUBERNETES_VERSION} > lua/yaml-companion/kubernetes/version.lua
+	perl resources/scripts/generate_kubernetes_version.pl ${KUBERNETES_VERSION} > lua/yaml-companion/builtin/kubernetes/version.lua
 
 docker-build:
 	docker build -t ci --build-arg NEOVIM_VERSION=${NEOVIM_VERSION} -f Dockerfile .

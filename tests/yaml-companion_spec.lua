@@ -87,7 +87,7 @@ describe("schema detection:", function()
         {
           description = "Ansible playbook files",
           name = "Ansible Playbook",
-          uri = "https://raw.githubusercontent.com/ansible-community/schemas/main/f/ansible.json#/definitions/playbook",
+          uri = "https://raw.githubusercontent.com/ansible-community/schemas/main/f/ansible.json#/$defs/playbook",
         },
       },
     }
@@ -112,7 +112,7 @@ describe("schema detection:", function()
         "foo.yml"
       )
     )
-    local expect = require("yaml-companion.config").options.schemas
+    local expect = { result = require("yaml-companion.builtin.kubernetes").handles() }
     wait_until(function()
       local result = require("yaml-companion").get_buf_schema(0)
       if

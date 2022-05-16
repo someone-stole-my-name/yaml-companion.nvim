@@ -1,23 +1,11 @@
 local M = {}
-
-local kubernetes_version = require("yaml-companion.kubernetes.version")
+local matchers = require("yaml-companion._matchers")
 
 M.defaults = {
-  -- Enabled Kubernetes file autodetection
-  kubernetes_autodetection_enabled = true,
-
-  -- Additional known schemas
-  schemas = {
-    result = {
-      {
-        name = "Kubernetes",
-        uri = "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/"
-          .. kubernetes_version
-          .. "-standalone-strict/all.json",
-      },
-    },
+  builtin_matchers = {
+    kubernetes = { enabled = true },
   },
-  -- pass any additional options that will be merged in the final lsp config
+  schemas = {},
   lspconfig = {
     flags = {
       debounce_text_changes = 150,
@@ -60,6 +48,9 @@ function M.setup(options, on_attach)
   end
 
   M.options = vim.tbl_deep_extend("force", {}, M.defaults, options or {})
+
+  -- TODO: only load then is enabled
+  matchers.load("kubernetes")
 end
 
 return M

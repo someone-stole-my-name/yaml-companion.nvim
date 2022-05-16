@@ -2,6 +2,7 @@ local M = {}
 
 local default_schema = { result = { { name = "none", uri = "none" } } }
 local lsp = require("yaml-companion.lsp.requests")
+local matchers = require("yaml-companion._matchers")._loaded
 
 M.default_schema = function()
   return default_schema
@@ -51,27 +52,23 @@ M.setup = function(bufnr, client)
           end
         end
 
-        -- if LSP is not using any schema and bufnr looks like kubernetes
-      elseif
-        options.kubernetes_autodetection_enabled
-        and require("yaml-companion.kubernetes").looks_like_kubernetes(bufnr)
-      then
-        -- TODO: loop defined schemas and find kubernetes|Kubernetes
-        -- instead of assuming first item
-        if
-          options.schemas
-          and options.schemas.result
-          and options.schemas.result[1]
-          and options.schemas.result[1].name
-          and options.schemas.result[1].uri
-          and options.schemas.result[1].name == "Kubernetes"
-        then
-          M.schema(bufnr, {
-            result = {
-              { name = options.schemas.result[1].name, uri = options.schemas.result[1].uri },
-            },
-          })
-          timer:close()
+        -- if LSP is not using any schema, use registered matchers
+      else
+        if bufnr == 0 then
+          bufnr = vim.api.nvim_get_current_buf()
+        end
+        local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+
+        for _, matcher in pairs(matchers) do
+          local result = matcher.match(lines)
+          if result then
+            M.schema(bufnr, {
+              result = {
+                { name = result.name, uri = result.uri },
+              },
+            })
+            timer:close()
+          end
         end
       end
     end)

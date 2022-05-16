@@ -142,4 +142,20 @@ describe("schema detection:", function()
     end
     vim.api.nvim_buf_delete(0, { force = true })
   end)
+
+  it("should detect dummy using the external dummy matcher", function()
+    assert(buf("test: true\n", "yaml", "dummy.yml"))
+    local expect = { result = require("yaml-companion._matchers.dummy").handles() }
+    wait_until(function()
+      local result = require("yaml-companion").get_buf_schema(0)
+      if
+        result.result[1].name ~= require("yaml-companion.context").default_schema().result[1].name
+      then
+        return true
+      end
+    end)
+    local result = require("yaml-companion").get_buf_schema(0)
+    assert.are.same(expect, result)
+    vim.api.nvim_buf_delete(0, { force = true })
+  end)
 end)

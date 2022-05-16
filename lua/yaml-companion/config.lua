@@ -49,8 +49,11 @@ function M.setup(options, on_attach)
 
   M.options = vim.tbl_deep_extend("force", {}, M.defaults, options or {})
 
-  -- TODO: only load then is enabled
-  matchers.load("kubernetes")
+  for name, matcher in pairs(M.options.builtin_matchers) do
+    if matcher.enabled then
+      matchers.load(name)
+    end
+  end
 end
 
 return M

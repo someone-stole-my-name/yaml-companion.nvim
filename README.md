@@ -13,7 +13,8 @@
 
 - Select specific JSON schema per buffer
 - Get the in-use schema
-- Kubernetes autodetection + Schema Store support 
+- Extensible autodetection + Schema Store support 
+- Builtin Kubernetes support
 
 ## 📦 Installation
 
@@ -40,15 +41,22 @@ use {
 
 ```lua
 {
+  -- Built in file matchers
+  builtin_matchers = {
+    -- Detects Kubernetes files based on content
+    kubernetes = { enabled = true },
+  },
+
+  -- Additional schemas available in Telescope picker
   schemas = {
     result = {
-      -- Additional known schemas
-      {
-        name = "Kubernetes",
-        uri = "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.22.4-standalone-strict/all.json",
-      },
+      --{
+      --  name = "Kubernetes 1.22.4",
+      --  uri = "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.22.4-standalone-strict/all.json",
+      --},
     },
   },
+
   -- Pass any additional options that will be merged in the final LSP config
   lspconfig = {
     flags = {

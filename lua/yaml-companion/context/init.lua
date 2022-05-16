@@ -54,13 +54,8 @@ M.setup = function(bufnr, client)
 
         -- if LSP is not using any schema, use registered matchers
       else
-        if bufnr == 0 then
-          bufnr = vim.api.nvim_get_current_buf()
-        end
-        local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-
         for _, matcher in pairs(matchers) do
-          local result = matcher.match(lines)
+          local result = matcher.match(bufnr)
           if result then
             M.schema(bufnr, {
               result = {

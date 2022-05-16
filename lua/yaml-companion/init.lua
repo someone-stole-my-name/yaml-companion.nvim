@@ -11,10 +11,15 @@ M.setup = function(opts)
   return config.options.lspconfig
 end
 
+--- Set the schema used for a buffer.
+---@param bufnr number: Buffer number
+---@param schema table: Schema
 M.set_buf_schema = function(bufnr, schema)
   ctx.schema(bufnr, schema)
 end
 
+--- Get the schema used for a buffer.
+---@param bufnr number: Buffer number
 M.get_buf_schema = function(bufnr)
   return ctx.schema(bufnr)
 end

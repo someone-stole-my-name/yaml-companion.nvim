@@ -22,7 +22,7 @@ M.defaults = {
           url = "https://www.schemastore.org/api/json/catalog.json",
         },
         schemaDownload = { enable = true },
-        schemas = {},
+        schemas = { result = {} },
         trace = { server = "debug" },
       },
     },

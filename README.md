@@ -11,10 +11,10 @@
 
 ## ✨ Features
 
+- Builtin Kubernetes manifest autodetection
 - Select specific JSON schema per buffer
 - Get the in-use schema
 - Extensible autodetection + Schema Store support 
-- Builtin Kubernetes support
 
 ## 📦 Installation
 

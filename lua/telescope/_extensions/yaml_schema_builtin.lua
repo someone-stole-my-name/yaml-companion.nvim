@@ -1,7 +1,6 @@
 local M = {}
 
-local lsp = require("yaml-companion.lsp.requests")
-local matchers = require("yaml-companion._matchers")._loaded
+local lsp = require("yaml-companion.lsp.util")
 local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
 local conf = require("telescope.config").values
@@ -9,24 +8,10 @@ local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
 
 local yaml_schema = function(opts)
-  local results = lsp.get_all_jsonschemas(0)
+  local results = lsp.get_all_yaml_schemas()
+
   if results == nil then
     return
-  end
-
-  -- merge with user defined schemas
-  results = vim.tbl_deep_extend(
-    "force",
-    results.result,
-    require("yaml-companion.config").options.schemas.result or {}
-  )
-
-  -- merge with matchers exposed schemas
-  for _, matcher in pairs(matchers) do
-    local handles = matcher.handles() or {}
-    for _, schema in ipairs(handles) do
-      table.insert(results, schema)
-    end
   end
 
   opts = opts or {}

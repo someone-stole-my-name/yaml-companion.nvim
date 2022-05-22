@@ -24,11 +24,7 @@ M.open_ui_select = function()
     return
   end
 
-  vim.ui.select(
-    schemas,
-    { format_item = display_schema_item, prompt = "Schema" },
-    select_schema
-  )
+  vim.ui.select(schemas, { format_item = display_schema_item, prompt = "Schema" }, select_schema)
 end
 
 return M

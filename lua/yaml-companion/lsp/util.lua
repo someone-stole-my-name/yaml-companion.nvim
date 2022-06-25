@@ -1,23 +1,12 @@
 local M = {}
 
-local nvim_lsp = vim.lsp
-local yaml_lsp = require("yaml-companion.lsp.requests")
+local lsp = require("yaml-companion.lsp.requests")
 local matchers = require("yaml-companion._matchers")._loaded
 
--- returns the yamlls client attached to {bufnr} if it has an active yamlls attached
-M.client = function(bufnr)
-  local clients = nvim_lsp.buf_get_clients(bufnr)
-  for _, value in pairs(clients) do
-    if value.name == "yamlls" then
-      return value
-    end
-  end
-end
-
 --- Get all of the yaml schemas currently available to the server.
---- @return table schemas: merged list of user-defined and server-provided yaml schemas
+--- @return table schemas: merged list of user-defined, server-provided, and matcher-provided yaml schemas
 M.get_all_yaml_schemas = function()
-  local schemas = yaml_lsp.get_all_jsonschemas(0)
+  local schemas = lsp.get_all_jsonschemas(0)
 
   if schemas == nil then
     return

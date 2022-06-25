@@ -8,6 +8,7 @@ M.setup = function(opts)
   config.setup(opts, function(client, bufnr)
     ctx.setup(bufnr, client)
   end)
+  vim.lsp.handlers["yaml/schema/store/initialized"] = ctx.store_initialized_handler
   return config.options.lspconfig
 end
 

@@ -31,4 +31,9 @@ M.load_matcher = function(name)
   return _matchers.load(name)
 end
 
+--- Opens a vim.ui.select menu to choose a schema
+M.open_ui_select = function()
+  require("yaml-companion.select.ui").open_ui_select()
+end
+
 return M

@@ -102,6 +102,11 @@ No mappings included, you need to map it yourself or call it manually:
 :Telescope yaml_schema
 ```
 
+Alternatively, you can use `vim.ui.select` to use the picker of your choice. In that case, you can bind/call the function:
+```lua
+require("yaml-companion").open_ui_select()
+```
+
 ### Get the schema name for the current buffer
 
 You can show the current schema in your statusline using a function like:

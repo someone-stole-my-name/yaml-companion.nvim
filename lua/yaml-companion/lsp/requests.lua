@@ -12,7 +12,7 @@ M.support_schema_selection = function(bufnr, client)
   if bufnr == 0 then
     bufnr = vim.api.nvim_get_current_buf()
   end
-  client = client or lsp.get_active_clients({ name = "yamlls", bufnr = bufnr })
+  client = client or lsp.get_active_clients({ name = "yamlls", bufnr = bufnr })[1]
 
   if client then
     return client.notify("yaml/supportSchemaSelection")
@@ -26,7 +26,7 @@ M.get_all_jsonschemas = function(bufnr, client)
   if bufnr == 0 then
     bufnr = vim.api.nvim_get_current_buf()
   end
-  client = client or lsp.get_active_clients({ name = "yamlls", bufnr = bufnr })
+  client = client or lsp.get_active_clients({ name = "yamlls", bufnr = bufnr })[1]
 
   if client then
     return client.request_sync(
@@ -45,7 +45,7 @@ M.get_jsonschema = function(bufnr, client)
   if bufnr == 0 then
     bufnr = vim.api.nvim_get_current_buf()
   end
-  client = client or lsp.get_active_clients({ name = "yamlls", bufnr = bufnr })
+  client = client or lsp.get_active_clients({ name = "yamlls", bufnr = bufnr })[1]
 
   if client then
     local schemas = client.request_sync(

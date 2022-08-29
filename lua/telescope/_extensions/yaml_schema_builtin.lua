@@ -15,29 +15,31 @@ local yaml_schema = function(opts)
   end
 
   opts = opts or {}
-  pickers.new(opts, {
-    prompt_title = "Schema",
-    finder = finders.new_table({
-      results = results,
-      entry_maker = function(entry)
-        return {
-          value = entry,
-          display = entry.name,
-          ordinal = entry.name,
-        }
+  pickers
+    .new(opts, {
+      prompt_title = "Schema",
+      finder = finders.new_table({
+        results = results,
+        entry_maker = function(entry)
+          return {
+            value = entry,
+            display = entry.name,
+            ordinal = entry.name,
+          }
+        end,
+      }),
+      sorter = conf.generic_sorter(opts),
+      attach_mappings = function(prompt_bufnr, map)
+        actions.select_default:replace(function()
+          actions.close(prompt_bufnr)
+          local selection = action_state.get_selected_entry()
+          local schema = { result = { { name = selection.value.name, uri = selection.value.uri } } }
+          require("yaml-companion.context").schema(0, schema)
+        end)
+        return true
       end,
-    }),
-    sorter = conf.generic_sorter(opts),
-    attach_mappings = function(prompt_bufnr, map)
-      actions.select_default:replace(function()
-        actions.close(prompt_bufnr)
-        local selection = action_state.get_selected_entry()
-        local schema = { result = { { name = selection.value.name, uri = selection.value.uri } } }
-        require("yaml-companion.context").schema(0, schema)
-      end)
-      return true
-    end,
-  }):find()
+    })
+    :find()
 end
 
 M.yaml_schema = function(opts)

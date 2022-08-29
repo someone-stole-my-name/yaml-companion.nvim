@@ -48,12 +48,8 @@ M.get_jsonschema = function(bufnr, client)
   client = client or lsp.get_active_clients({ name = "yamlls", bufnr = bufnr })[1]
 
   if client then
-    local schemas = client.request_sync(
-      "yaml/get/jsonSchema",
-      vim.uri_from_bufnr(bufnr),
-      sync_timeout,
-      bufnr
-    )
+    local schemas =
+      client.request_sync("yaml/get/jsonSchema", vim.uri_from_bufnr(bufnr), sync_timeout, bufnr)
     return schemas
   end
 end

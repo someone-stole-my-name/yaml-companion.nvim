@@ -77,6 +77,10 @@ M.autodiscover = function(bufnr, client)
 end
 
 M.setup = function(bufnr, client)
+  if client.name ~= "yamlls" then
+    return
+  end
+
   local state = {
     bufnr = bufnr,
     client = client,

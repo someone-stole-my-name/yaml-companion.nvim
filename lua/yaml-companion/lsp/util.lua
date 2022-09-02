@@ -7,8 +7,8 @@ local matchers = require("yaml-companion._matchers")._loaded
 --- @return table schemas: merged list of user-defined, server-provided, and matcher-provided yaml schemas
 M.get_all_yaml_schemas = function()
   local schemas = lsp.get_all_jsonschemas(0)
-
-  if schemas == nil then
+  if schemas == nil or vim.tbl_count(schemas.result or {}) == 0 then
+    vim.notify("Schemas not loaded yet.")
     return
   end
 
@@ -18,6 +18,12 @@ M.get_all_yaml_schemas = function()
     schemas.result,
     require("yaml-companion.config").options.schemas.result or {}
   )
+
+  for i, schema in ipairs(schemas) do
+    if not schema.uri or not schema.uri:find("^https?") then
+      table.remove(schemas, i)
+    end
+  end
 
   -- merge with matchers exposed schemas
   for _, matcher in pairs(matchers) do

@@ -39,7 +39,6 @@ M.get_all_jsonschemas = function(bufnr, client)
     bufnr = vim.api.nvim_get_current_buf()
   end
   client = client or M.get_client(bufnr)
-  P(client)
   if client then
     return client.request_sync(
       "yaml/get/all/jsonSchemas",

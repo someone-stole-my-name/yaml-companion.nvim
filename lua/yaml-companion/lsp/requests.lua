@@ -49,7 +49,7 @@ M.get_jsonschema = function(bufnr, client)
 
   if client then
     local schemas =
-    client.request_sync("yaml/get/jsonSchema", vim.uri_from_bufnr(bufnr), sync_timeout, bufnr)
+      client.request_sync("yaml/get/jsonSchema", vim.uri_from_bufnr(bufnr), sync_timeout, bufnr)
     return schemas
   end
 end

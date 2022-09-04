@@ -34,7 +34,6 @@ M.autodiscover = function(bufnr, client)
 
   local schema = lsp.get_jsonschema(bufnr, client)
   local options = require("yaml-companion.config").options
-  P(schema)
 
   if schema and schema.result and schema.result[1] and schema.result[1].uri then
     -- if LSP returns a name that means it came from SchemaStore

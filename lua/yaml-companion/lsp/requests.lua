@@ -4,10 +4,9 @@ local lsp = vim.lsp
 local sync_timeout = 1000
 
 local function get_yamlls_client(bufnr)
-  local clients = vim.tbl_filter(
-    function(c) return c.name == "yamlls" end,
-    lsp.buf_get_clients(bufnr)
-  )
+  local clients = vim.tbl_filter(function(c)
+    return c.name == "yamlls"
+  end, lsp.buf_get_clients(bufnr))
   if #clients > 0 then
     return clients[1]
   end

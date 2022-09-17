@@ -19,12 +19,6 @@ M.get_all_yaml_schemas = function()
     require("yaml-companion.config").options.schemas.result or {}
   )
 
-  for i, schema in ipairs(schemas) do
-    if not schema.uri or not schema.uri:find("^https?") then
-      table.remove(schemas, i)
-    end
-  end
-
   -- merge with matchers exposed schemas
   for _, matcher in pairs(matchers) do
     local handles = matcher.handles() or {}

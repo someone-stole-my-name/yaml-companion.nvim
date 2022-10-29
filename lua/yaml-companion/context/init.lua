@@ -139,7 +139,7 @@ M.schema = function(bufnr, schema)
     override[schema.result[1].uri] = bufuri
     settings = vim.tbl_deep_extend("force", settings, { yaml = { schemas = override } })
     client.config.settings =
-    vim.tbl_deep_extend("force", settings, { yaml = { schemas = override } })
+      vim.tbl_deep_extend("force", settings, { yaml = { schemas = override } })
     client.workspace_did_change_configuration(client.config.settings)
   end
 

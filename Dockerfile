@@ -1,7 +1,7 @@
 FROM alpine:latest
 
 ARG HADOLINT_VERSION=2.10.0
-ARG NEOVIM_VERSION=0.7.0
+ARG NEOVIM_VERSION=stable
 
 WORKDIR /tmp/nvim
 
@@ -29,7 +29,7 @@ RUN apk --no-cache add \
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN git clone --depth 1 --branch v${NEOVIM_VERSION} https://github.com/neovim/neovim && \
+RUN git clone --depth 1 --branch ${NEOVIM_VERSION} https://github.com/neovim/neovim && \
   cd neovim && \
   make CMAKE_BUILD_TYPE=Release && \
   make install

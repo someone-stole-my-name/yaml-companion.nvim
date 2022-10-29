@@ -81,6 +81,12 @@ M.setup = function(bufnr, client)
     return
   end
 
+  -- The server does support formatting but it is disabled by default
+  -- https://github.com/redhat-developer/yaml-language-server/issues/486
+  client.server_capabilities.documentFormattingProvider = true
+  client.server_capabilities.documentRangeFormattingProvider = true
+
+
   local state = {
     bufnr = bufnr,
     client = client,
@@ -124,7 +130,7 @@ M.schema = function(bufnr, schema)
     override[schema.result[1].uri] = bufuri
     settings = vim.tbl_deep_extend("force", settings, { yaml = { schemas = override } })
     client.config.settings =
-      vim.tbl_deep_extend("force", settings, { yaml = { schemas = override } })
+    vim.tbl_deep_extend("force", settings, { yaml = { schemas = override } })
     client.workspace_did_change_configuration(client.config.settings)
   end
 

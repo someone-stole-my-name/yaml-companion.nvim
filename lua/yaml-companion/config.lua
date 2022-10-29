@@ -39,6 +39,7 @@ function M.setup(options, on_attach)
   if options.lspconfig == nil then
     options.lspconfig = {}
   end
+
   -- hijack the user supplied on_attach callback to also call our own on_attach
   if options.lspconfig.on_attach then
     options.real_on_attach = options.lspconfig.on_attach

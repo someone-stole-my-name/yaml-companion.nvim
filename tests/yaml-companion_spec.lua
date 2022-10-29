@@ -61,7 +61,7 @@ describe("schema detection:", function()
         {
           description = "Ansible playbook files",
           name = "Ansible Playbook",
-          uri = "https://raw.githubusercontent.com/ansible-community/schemas/main/f/ansible.json#/definitions/playbook",
+          uri = "https://raw.githubusercontent.com/ansible-community/schemas/main/f/ansible.json#/$defs/playbook",
         },
       },
     }
@@ -87,7 +87,7 @@ describe("schema detection:", function()
         {
           description = "Ansible playbook files",
           name = "Ansible Playbook",
-          uri = "https://raw.githubusercontent.com/ansible-community/schemas/main/f/ansible.json#/$defs/playbook",
+          uri = "https://raw.githubusercontent.com/ansible/schemas/main/f/ansible.json#/$defs/playbook",
         },
       },
     }

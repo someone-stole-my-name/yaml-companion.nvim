@@ -81,6 +81,21 @@ M.setup = function(bufnr, client)
     return
   end
 
+  -- The server does support formatting but it is disabled by default
+  -- https://github.com/redhat-developer/yaml-language-server/issues/486
+  client.server_capabilities.documentFormattingProvider = true
+  client.server_capabilities.documentRangeFormattingProvider = true
+
+  -- remove yamlls from not yaml files
+  -- https://github.com/towolf/vim-helm/issues/15
+  if vim.bo[bufnr].buftype ~= "" or vim.bo[bufnr].filetype == "helm" then
+    vim.diagnostic.disable(bufnr)
+    vim.defer_fn(function()
+      vim.diagnostic.reset(nil, bufnr)
+    end, 1000)
+    vim.lsp.buf_detach_client(bufnr, client.id)
+  end
+
   local state = {
     bufnr = bufnr,
     client = client,

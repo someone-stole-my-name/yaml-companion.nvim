@@ -4,7 +4,7 @@ local matchers = require("yaml-companion._matchers")
 M.defaults = {
   builtin_matchers = {
     kubernetes = { enabled = true },
-    cloud_init = { enabled = true }
+    cloud_init = { enabled = true },
   },
   schemas = {},
   lspconfig = {

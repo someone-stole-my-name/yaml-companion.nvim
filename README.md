@@ -12,8 +12,7 @@
 ## ✨ Features
 
 - Builtin Kubernetes manifest autodetection
-- Select specific JSON schema per buffer
-- Get the in-use schema
+- Get/Set specific JSON schema per buffer
 - Extensible autodetection + Schema Store support 
 
 ## 📦 Installation
@@ -46,6 +45,7 @@ use {
   builtin_matchers = {
     -- Detects Kubernetes files based on content
     kubernetes = { enabled = true },
+    cloud_init = { enabled = true }
   },
 
   -- Additional schemas available in Telescope picker

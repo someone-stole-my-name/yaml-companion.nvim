@@ -1,4 +1,3 @@
-NEOVIM_VERSION=stable
 KUBERNETES_VERSION=1.22.4
 
 lint:
@@ -22,7 +21,7 @@ generate_kubernetes_version:
 	perl resources/scripts/generate_kubernetes_version.pl ${KUBERNETES_VERSION} > lua/yaml-companion/builtin/kubernetes/version.lua
 
 docker-build:
-	docker build -t ci --build-arg NEOVIM_VERSION=${NEOVIM_VERSION} -f Dockerfile .
+	docker build -t ci -f Dockerfile .
 
 docker-%: docker-build
 	docker run \

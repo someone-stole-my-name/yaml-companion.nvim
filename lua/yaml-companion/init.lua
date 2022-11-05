@@ -1,13 +1,14 @@
 local M = {}
 
 local _matchers = require("yaml-companion._matchers")
-local ctx = require("yaml-companion.context")
+local ctx = {}
 
 M.setup = function(opts)
   local config = require("yaml-companion.config")
   config.setup(opts, function(client, bufnr)
-    ctx.setup(bufnr, client)
+    require("yaml-companion.context").setup(bufnr, client)
   end)
+  ctx = require("yaml-companion.context")
   vim.lsp.handlers["yaml/schema/store/initialized"] = ctx.store_initialized_handler
   return config.options.lspconfig
 end

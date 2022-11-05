@@ -2,6 +2,10 @@ local M = {}
 local matchers = require("yaml-companion._matchers")
 
 M.defaults = {
+  log_level = {
+    lsp = "info",
+    context = "info",
+  },
   builtin_matchers = {
     kubernetes = { enabled = true },
     cloud_init = { enabled = true },

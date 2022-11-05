@@ -4,6 +4,8 @@ local default_schema = { result = { { name = "none", uri = "none" } } }
 local lsp = require("yaml-companion.lsp.requests")
 local matchers = require("yaml-companion._matchers")._loaded
 
+local log_level = require("yaml-companion.config").options.log_level.context
+local log = require("yaml-companion.log").new({ level = log_level }, true)
 M.default_schema = function()
   return default_schema
 end
@@ -14,6 +16,7 @@ M.initialized_client_ids = {}
 M.store_initialized_handler = function(_, _, ctx, _)
   local client_id = ctx.client_id
   M.initialized_client_ids[client_id] = true
+  log.fmt_debug("client_id=%d is now initialized", client_id)
 
   local client = vim.lsp.get_client_by_id(client_id)
   local buffers = vim.lsp.get_buffers_by_client_id(client_id)
@@ -22,6 +25,7 @@ M.store_initialized_handler = function(_, _, ctx, _)
   -- all existing buffers and update then accordingly.
   for _, bufnr in ipairs(buffers) do
     if M.ctxs[bufnr] and M.ctxs[bufnr].executed == false then
+      log.fmt_debug("client_id=%d bufnr=%d running autodiscover", client_id, bufnr)
       M.autodiscover(bufnr, client)
     end
   end
@@ -29,9 +33,11 @@ end
 
 M.autodiscover = function(bufnr, client)
   if not M.initialized_client_ids[client.id] then
+    log.fmt_debug("bufnr=%d client_id=%d is not yet initialized", bufnr, client.id)
     return
   end
 
+  M.ctxs[bufnr].executed = true
   local schema = lsp.get_jsonschema(bufnr, client)
   local options = require("yaml-companion.config").options
 
@@ -40,7 +46,13 @@ M.autodiscover = function(bufnr, client)
     -- and we can use it right away
     if schema.result[1].name then
       M.ctxs[bufnr].schema = schema
-      M.ctxs[bufnr].executed = true
+      log.fmt_debug(
+        "bufnr=%d client_id=%d schema=%s an SchemaStore defined schema matched this file",
+        bufnr,
+        client.id,
+        schema.result[1].name
+      )
+      return
 
       -- if it returned something without a name it means it came from our own
       -- internal schema table and we have to loop through it to get the name
@@ -52,9 +64,20 @@ M.autodiscover = function(bufnr, client)
               { name = option_schema.name, uri = option_schema.uri },
             },
           }
-          M.ctxs[bufnr].executed = true
+          log.fmt_debug(
+            "bufnr=%d client_id=%d schema=%s an user defined schema matched this file",
+            bufnr,
+            client.id,
+            option_schema.name
+          )
+          return
         end
       end
+      log.fmt_debug(
+        "bufnr=%d client_id=%d schema=%s no user defined schema matched this file",
+        bufnr,
+        client.id
+      )
     end
 
     -- if LSP is not using any schema, use registered matchers
@@ -67,13 +90,24 @@ M.autodiscover = function(bufnr, client)
             { name = result.name, uri = result.uri },
           },
         })
-        M.ctxs[bufnr].executed = true
+        log.fmt_debug(
+          "bufnr=%d client_id=%d schema=%s a registered matcher matched this file",
+          bufnr,
+          client.id,
+          result.name
+        )
+        return
       end
     end
+    log.fmt_debug(
+      "bufnr=%d client_id=%d schema=%s no registered matcher matched this file",
+      bufnr,
+      client.id
+    )
   end
 
   -- No schema matched
-  M.ctxs[bufnr].executed = true
+  log.fmt_debug("bufnr=%d client_id=%d no registered schema matches", bufnr, client.id)
 end
 
 M.setup = function(bufnr, client)

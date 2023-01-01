@@ -87,7 +87,7 @@ describe("schema detection:", function()
         {
           description = "Ansible playbook files",
           name = "Ansible Playbook",
-          uri = "https://raw.githubusercontent.com/ansible/schemas/main/f/ansible.json#/$defs/playbook",
+          uri = "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/ansible.json#/$defs/playbook",
         },
       },
     }

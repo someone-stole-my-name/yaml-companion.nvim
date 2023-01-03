@@ -1,5 +1,6 @@
 local M = {}
 local matchers = require("yaml-companion._matchers")
+local add_hook_after = require("lspconfig.util").add_hook_after
 
 M.defaults = {
   log_level = {
@@ -45,19 +46,9 @@ function M.setup(options, on_attach)
     options.lspconfig = {}
   end
 
-  -- hijack the user supplied on_attach callback to also call our own on_attach
-  if options.lspconfig.on_attach then
-    options.real_on_attach = options.lspconfig.on_attach
-  end
-
-  options.lspconfig.on_attach = function(client, bufnr)
-    if M.options.real_on_attach then
-      M.options.real_on_attach(client, bufnr)
-    end
-    on_attach(client, bufnr)
-  end
-
   M.options = vim.tbl_deep_extend("force", {}, M.defaults, options or {})
+
+
 
   for name, matcher in pairs(M.options.builtin_matchers) do
     if matcher.enabled then

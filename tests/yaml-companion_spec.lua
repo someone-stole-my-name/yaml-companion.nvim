@@ -131,11 +131,14 @@ describe("schema detection:", function()
       'Incorrect type. Expected "string".',
     }
 
-    wait_until(function()
-      if #vim.diagnostic.get() == 2 then
-        return true
-      end
-    end)
+    assert.are.same(
+      true,
+      wait_until(function()
+        if #vim.diagnostic.get() == 2 then
+          return true
+        end
+      end)
+    )
 
     for index, value in ipairs(vim.diagnostic.get()) do
       assert.are.same(expect[index], value.message)

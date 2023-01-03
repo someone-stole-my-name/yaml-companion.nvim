@@ -174,7 +174,6 @@ M.schema = function(bufnr, schema)
     local override = {}
     override[schema.result[1].uri] = bufuri
 
-
     log.fmt_debug("file=%s schema=%s set new override", bufuri, schema.result[1].uri)
 
     settings = vim.tbl_deep_extend("force", settings, { yaml = { schemas = override } })

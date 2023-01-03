@@ -1,44 +1,43 @@
 local M = {}
 
-local default_schema = { result = { { name = "none", uri = "none" } } }
 local lsp = require("yaml-companion.lsp.requests")
 local matchers = require("yaml-companion._matchers")._loaded
 
-local log_level = require("yaml-companion.config").options.log_level.context
-local log = require("yaml-companion.log").new({ level = log_level }, true)
+local log = require("yaml-companion.log")
+
+---@type SchemaResult
+local default_schema = { result = { { name = "none", uri = "none" } } }
+
+---@return SchemaResult
 M.default_schema = function()
   return default_schema
 end
 
+---@type { client: vim.lsp.client, schema: SchemaResult, executed: boolean}[]
 M.ctxs = {}
 M.initialized_client_ids = {}
 
-M.store_initialized_handler = function(_, _, ctx, _)
-  local client_id = ctx.client_id
-  M.initialized_client_ids[client_id] = true
-  log.fmt_debug("client_id=%d is now initialized", client_id)
-
-  local client = vim.lsp.get_client_by_id(client_id)
-  local buffers = vim.lsp.get_buffers_by_client_id(client_id)
-
-  -- The store for this client_id has been initialized, we must check
-  -- all existing buffers and update then accordingly.
-  for _, bufnr in ipairs(buffers) do
-    if M.ctxs[bufnr] and M.ctxs[bufnr].executed == false then
-      log.fmt_debug("client_id=%d bufnr=%d running autodiscover", client_id, bufnr)
-      M.autodiscover(bufnr, client)
-    end
-  end
-end
-
+---@param bufnr number
+---@param client vim.lsp.client
+---@return SchemaResult | nil
 M.autodiscover = function(bufnr, client)
+  if not M.ctxs[bufnr] then
+    log.fmt_error("bufnr=%d client_id=%d doesn't exists", bufnr, client.id)
+    return
+  end
+
   if not M.initialized_client_ids[client.id] then
     log.fmt_debug("bufnr=%d client_id=%d is not yet initialized", bufnr, client.id)
     return
   end
 
+  if M.ctxs[bufnr].executed then
+    log.fmt_debug("bufnr=%d client_id=%d already executed", bufnr, client.id)
+    return M.ctxs[bufnr].schema
+  end
+
   M.ctxs[bufnr].executed = true
-  local schema = lsp.get_jsonschema(bufnr, client)
+  local schema = lsp.get_jsonschema(bufnr)
   local options = require("yaml-companion.config").options
 
   if schema and schema.result and schema.result[1] and schema.result[1].uri then
@@ -52,7 +51,7 @@ M.autodiscover = function(bufnr, client)
         client.id,
         schema.result[1].name
       )
-      return
+      return M.ctxs[bufnr].schema
 
       -- if it returned something without a name it means it came from our own
       -- internal schema table and we have to loop through it to get the name
@@ -70,7 +69,7 @@ M.autodiscover = function(bufnr, client)
             client.id,
             option_schema.name
           )
-          return
+          return M.ctxs[bufnr].schema
         end
       end
       log.fmt_debug(
@@ -96,20 +95,21 @@ M.autodiscover = function(bufnr, client)
           client.id,
           result.name
         )
-        return
+        return M.ctxs[bufnr].schema
       end
     end
-    log.fmt_debug(
-      "bufnr=%d client_id=%d schema=%s no registered matcher matched this file",
-      bufnr,
-      client.id
-    )
+
+    log.fmt_debug("bufnr=%d client_id=%d no registered matcher matched this file", bufnr, client.id)
   end
 
   -- No schema matched
   log.fmt_debug("bufnr=%d client_id=%d no registered schema matches", bufnr, client.id)
+
+  return {}
 end
 
+---@param bufnr number
+---@param client vim.lsp.client
 M.setup = function(bufnr, client)
   if client.name ~= "yamlls" then
     return
@@ -133,7 +133,6 @@ M.setup = function(bufnr, client)
   end
 
   local state = {
-    bufnr = bufnr,
     client = client,
     schema = default_schema,
     executed = false,
@@ -144,10 +143,11 @@ M.setup = function(bufnr, client)
   -- The first time this won't work because the client is not initialized yet
   -- but it will be called once per client from the initialized_handler when it is.
   M.autodiscover(bufnr, client)
-
-  return lsp.support_schema_selection(bufnr, client)
 end
 
+---@param bufnr number
+---@param schema SchemaResult | nil
+---@return SchemaResult
 M.schema = function(bufnr, schema)
   if bufnr == 0 then
     bufnr = vim.api.nvim_get_current_buf()
@@ -162,7 +162,7 @@ M.schema = function(bufnr, schema)
 
     local bufuri = vim.uri_from_bufnr(bufnr)
     local client = M.ctxs[bufnr].client
-    local settings = M.ctxs[bufnr].client.config.settings
+    local settings = client.config.settings
 
     -- we don't want more than 1 schema per file
     for key, _ in pairs(settings.yaml.schemas) do
@@ -173,6 +173,10 @@ M.schema = function(bufnr, schema)
 
     local override = {}
     override[schema.result[1].uri] = bufuri
+
+
+    log.fmt_debug("file=%s schema=%s set new override", bufuri, schema.result[1].uri)
+
     settings = vim.tbl_deep_extend("force", settings, { yaml = { schemas = override } })
     client.config.settings =
       vim.tbl_deep_extend("force", settings, { yaml = { schemas = override } })

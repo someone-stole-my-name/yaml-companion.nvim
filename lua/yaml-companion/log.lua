@@ -21,6 +21,7 @@ local default_config = {
   float_precision = 0.01,
 }
 
+---@type Logger
 local log = {}
 
 log.new = function(config, standalone)

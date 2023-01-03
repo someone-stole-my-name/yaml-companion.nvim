@@ -1,12 +1,11 @@
 local M = {}
 local matchers = require("yaml-companion._matchers")
+local handlers = require("vim.lsp.handlers")
 local add_hook_after = require("lspconfig.util").add_hook_after
 
+---@type ConfigOptions
 M.defaults = {
-  log_level = {
-    lsp = "info",
-    context = "info",
-  },
+  log_level = "info",
   formatting = true,
   builtin_matchers = {
     kubernetes = { enabled = true },
@@ -36,6 +35,7 @@ M.defaults = {
   },
 }
 
+---@type ConfigOptions
 M.options = {}
 
 function M.setup(options, on_attach)
@@ -51,12 +51,20 @@ function M.setup(options, on_attach)
 
   M.options.lspconfig.on_attach = add_hook_after(options.lspconfig.on_attach, on_attach)
 
+  M.options.lspconfig.on_init = add_hook_after(options.lspconfig.on_init, function(client)
+    client.notify("yaml/supportSchemaSelection", { {} })
+    return true
+  end)
 
   for name, matcher in pairs(M.options.builtin_matchers) do
     if matcher.enabled then
       matchers.load(name)
     end
   end
+
+  handlers["yaml/schema/store/initialized"] =
+    require("yaml-companion.lsp.handler").store_initialized
+  M.options.lspconfig.handlers = handlers
 end
 
 return M

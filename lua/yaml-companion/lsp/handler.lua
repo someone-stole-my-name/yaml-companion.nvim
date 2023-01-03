@@ -18,5 +18,4 @@ M.store_initialized = function(_, _, req, _)
   end
 end
 
-
 return M

@@ -51,7 +51,6 @@ function M.setup(options, on_attach)
 
   M.options.lspconfig.on_attach = add_hook_after(options.lspconfig.on_attach, on_attach)
 
-
   for name, matcher in pairs(M.options.builtin_matchers) do
     if matcher.enabled then
       matchers.load(name)

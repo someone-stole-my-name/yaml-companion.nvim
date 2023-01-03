@@ -23,13 +23,8 @@ local default_config = {
 
 local log = {}
 
-local unpack = unpack or table.unpack
-
 log.new = function(config, standalone)
   config = vim.tbl_deep_extend("force", default_config, config)
-
-  local outfile =
-    string.format("%s/%s.log", vim.api.nvim_call_function("stdpath", { "data" }), config.plugin)
 
   local obj
   if standalone then
@@ -95,14 +90,6 @@ log.new = function(config, standalone)
       if config.highlights and level_config.hl then
         vim.cmd("echohl NONE")
       end
-    end
-
-    -- Output to log file
-    if config.use_file then
-      local fp = io.open(outfile, "a")
-      local str = string.format("[%-6s%s] %s: %s\n", nameupper, os.date(), lineinfo, msg)
-      fp:write(str)
-      fp:close()
     end
   end
 

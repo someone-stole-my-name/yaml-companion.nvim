@@ -7,6 +7,7 @@ M.defaults = {
     lsp = "info",
     context = "info",
   },
+  formatting = true,
   builtin_matchers = {
     kubernetes = { enabled = true },
     cloud_init = { enabled = true },

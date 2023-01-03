@@ -117,8 +117,10 @@ M.setup = function(bufnr, client)
 
   -- The server does support formatting but it is disabled by default
   -- https://github.com/redhat-developer/yaml-language-server/issues/486
-  client.server_capabilities.documentFormattingProvider = true
-  client.server_capabilities.documentRangeFormattingProvider = true
+  if require("yaml-companion.config").options.formatting then
+    client.server_capabilities.documentFormattingProvider = true
+    client.server_capabilities.documentRangeFormattingProvider = true
+  end
 
   -- remove yamlls from not yaml files
   -- https://github.com/towolf/vim-helm/issues/15

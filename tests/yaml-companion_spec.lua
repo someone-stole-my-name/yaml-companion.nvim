@@ -87,7 +87,7 @@ describe("schema detection:", function()
         {
           description = "Ansible playbook files",
           name = "Ansible Playbook",
-          uri = "https://raw.githubusercontent.com/ansible/schemas/main/f/ansible.json#/$defs/playbook",
+          uri = "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/ansible.json#/$defs/playbook",
         },
       },
     }
@@ -131,11 +131,14 @@ describe("schema detection:", function()
       'Incorrect type. Expected "string".',
     }
 
-    wait_until(function()
-      if #vim.diagnostic.get() == 2 then
-        return true
-      end
-    end)
+    assert.are.same(
+      true,
+      wait_until(function()
+        if #vim.diagnostic.get() == 2 then
+          return true
+        end
+      end)
+    )
 
     for index, value in ipairs(vim.diagnostic.get()) do
       assert.are.same(expect[index], value.message)

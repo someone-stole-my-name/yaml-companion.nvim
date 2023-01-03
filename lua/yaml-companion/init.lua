@@ -1,29 +1,29 @@
 local M = {}
 
 local _matchers = require("yaml-companion._matchers")
-local ctx = {}
+M.ctx = {}
 
 M.setup = function(opts)
   local config = require("yaml-companion.config")
   config.setup(opts, function(client, bufnr)
     require("yaml-companion.context").setup(bufnr, client)
   end)
-  ctx = require("yaml-companion.context")
-  vim.lsp.handlers["yaml/schema/store/initialized"] = ctx.store_initialized_handler
+  M.ctx = require("yaml-companion.context")
+  require("yaml-companion.log").new({ level = config.options.log_level }, true)
   return config.options.lspconfig
 end
 
 --- Set the schema used for a buffer.
 ---@param bufnr number: Buffer number
----@param schema table: Schema
+---@param schema SchemaResult
 M.set_buf_schema = function(bufnr, schema)
-  ctx.schema(bufnr, schema)
+  M.ctx.schema(bufnr, schema)
 end
 
 --- Get the schema used for a buffer.
 ---@param bufnr number: Buffer number
 M.get_buf_schema = function(bufnr)
-  return ctx.schema(bufnr)
+  return M.ctx.schema(bufnr)
 end
 
 --- Loads a matcher.

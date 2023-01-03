@@ -1,7 +1,6 @@
 local M = {}
 
 local lsp = require("yaml-companion.lsp.util")
-local matchers = require("yaml-companion._matchers")._loaded
 
 --- Callback to be passed to vim.ui.select to display a single schema item
 --- @param schema table: Schema

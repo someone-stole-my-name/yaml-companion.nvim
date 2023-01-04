@@ -15,7 +15,7 @@ end
 
 --- Set the schema used for a buffer.
 ---@param bufnr number: Buffer number
----@param schema SchemaResult
+---@param schema SchemaResult | Schema
 M.set_buf_schema = function(bufnr, schema)
   M.ctx.schema(bufnr, schema)
 end
@@ -23,7 +23,9 @@ end
 --- Get the schema used for a buffer.
 ---@param bufnr number: Buffer number
 M.get_buf_schema = function(bufnr)
-  return M.ctx.schema(bufnr)
+  -- TODO: remove the result and instead return a Schema directly
+  -- this will break existing clients :/
+  return { result = { M.ctx.schema(bufnr) } }
 end
 
 --- Loads a matcher.

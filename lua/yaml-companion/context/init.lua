@@ -1,19 +1,12 @@
 local M = {}
 
-local lsp = require("yaml-companion.lsp.requests")
+--local lsp = require("yaml-companion.lsp.requests")
 local matchers = require("yaml-companion._matchers")._loaded
+local schema = require("yaml-companion.schema")
 
 local log = require("yaml-companion.log")
 
----@type SchemaResult
-local default_schema = { result = { { name = "none", uri = "none" } } }
-
----@return SchemaResult
-M.default_schema = function()
-  return default_schema
-end
-
----@type { client: vim.lsp.client, schema: SchemaResult, executed: boolean}[]
+---@type { client: vim.lsp.client, schema: Schema, executed: boolean}[]
 M.ctxs = {}
 M.initialized_client_ids = {}
 
@@ -37,66 +30,54 @@ M.autodiscover = function(bufnr, client)
   end
 
   M.ctxs[bufnr].executed = true
-  local schema = lsp.get_jsonschema(bufnr)
-  local options = require("yaml-companion.config").options
+  local current_schema = schema.current(bufnr)
 
-  if schema and schema.result and schema.result[1] and schema.result[1].uri then
-    -- if LSP returns a name that means it came from SchemaStore
-    -- and we can use it right away
-    if schema.result[1].name then
-      M.ctxs[bufnr].schema = schema
-      log.fmt_debug(
-        "bufnr=%d client_id=%d schema=%s an SchemaStore defined schema matched this file",
-        bufnr,
-        client.id,
-        schema.result[1].name
-      )
-      return M.ctxs[bufnr].schema
+  -- if LSP returns a name that means it came from SchemaStore
+  -- and we can use it right away
+  if current_schema.name and current_schema.uri ~= schema.default().uri then
+    M.ctxs[bufnr].schema = current_schema
+    log.fmt_debug(
+      "bufnr=%d client_id=%d schema=%s an SchemaStore defined schema matched this file",
+      bufnr,
+      client.id,
+      schema.name
+    )
+    return M.ctxs[bufnr].schema
 
-      -- if it returned something without a name it means it came from our own
-      -- internal schema table and we have to loop through it to get the name
-    elseif options and options.schemas and options.schemas.result then
-      for _, option_schema in ipairs(options.schemas.result) do
-        if option_schema.uri == schema.result[1].uri then
-          M.ctxs[bufnr].schema = {
-            result = {
-              { name = option_schema.name, uri = option_schema.uri },
-            },
-          }
-          log.fmt_debug(
-            "bufnr=%d client_id=%d schema=%s an user defined schema matched this file",
-            bufnr,
-            client.id,
-            option_schema.name
-          )
-          return M.ctxs[bufnr].schema
-        end
-      end
-      log.fmt_debug(
-        "bufnr=%d client_id=%d schema=%s no user defined schema matched this file",
-        bufnr,
-        client.id
-      )
-    end
-
-    -- if LSP is not using any schema, use registered matchers
+    -- if it returned something without a name it means it came from our own
+    -- internal schema table and we have to loop through it to get the name
   else
-    for _, matcher in pairs(matchers) do
-      local result = matcher.match(bufnr)
-      if result then
-        M.schema(bufnr, {
-          result = {
-            { name = result.name, uri = result.uri },
-          },
-        })
+    for _, option_schema in ipairs(schema.from_options()) do
+      if option_schema.uri == current_schema.uri then
+        M.ctxs[bufnr].schema = option_schema
         log.fmt_debug(
-          "bufnr=%d client_id=%d schema=%s a registered matcher matched this file",
+          "bufnr=%d client_id=%d schema=%s an user defined schema matched this file",
           bufnr,
           client.id,
-          result.name
+          option_schema.name
         )
         return M.ctxs[bufnr].schema
       end
+    end
+    log.fmt_debug(
+      "bufnr=%d client_id=%d no user defined schema matched this file",
+      bufnr,
+      client.id
+    )
+  end
+
+  -- if LSP is not using any schema, use registered matchers
+  for _, matcher in pairs(matchers) do
+    local result = matcher.match(bufnr)
+    if result then
+      M.schema(bufnr, { name = result.name, uri = result.uri })
+      log.fmt_debug(
+        "bufnr=%d client_id=%d schema=%s a registered matcher matched this file",
+        bufnr,
+        client.id,
+        result.name
+      )
+      return M.ctxs[bufnr].schema
     end
 
     log.fmt_debug("bufnr=%d client_id=%d no registered matcher matched this file", bufnr, client.id)
@@ -134,7 +115,7 @@ M.setup = function(bufnr, client)
 
   local state = {
     client = client,
-    schema = default_schema,
+    schema = schema.default(),
     executed = false,
   }
 
@@ -145,20 +126,27 @@ M.setup = function(bufnr, client)
   M.autodiscover(bufnr, client)
 end
 
+--- gets or sets the schema in its context and lsp
 ---@param bufnr number
----@param schema SchemaResult | nil
----@return SchemaResult
-M.schema = function(bufnr, schema)
+---@param new_schema Schema | SchemaResult | nil
+---@return Schema
+M.schema = function(bufnr, new_schema)
   if bufnr == 0 then
     bufnr = vim.api.nvim_get_current_buf()
   end
 
   if M.ctxs[bufnr] == nil then
-    return default_schema
+    return schema.default()
   end
 
-  if schema then
-    M.ctxs[bufnr].schema = schema
+  -- TODO: Just here because set_buf_schema also accepts a SchemaResult
+  -- remove once set_buf_schema is only accepts Schema
+  if new_schema and new_schema.result and new_schema.result[1] then
+    new_schema = new_schema.result[1]
+  end
+
+  if new_schema and new_schema.uri and new_schema.name then
+    M.ctxs[bufnr].schema = new_schema
 
     local bufuri = vim.uri_from_bufnr(bufnr)
     local client = M.ctxs[bufnr].client
@@ -172,9 +160,9 @@ M.schema = function(bufnr, schema)
     end
 
     local override = {}
-    override[schema.result[1].uri] = bufuri
+    override[new_schema.uri] = bufuri
 
-    log.fmt_debug("file=%s schema=%s set new override", bufuri, schema.result[1].uri)
+    log.fmt_debug("file=%s schema=%s set new override", bufuri, new_schema.uri)
 
     settings = vim.tbl_deep_extend("force", settings, { yaml = { schemas = override } })
     client.config.settings =

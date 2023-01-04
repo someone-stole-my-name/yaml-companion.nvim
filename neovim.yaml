@@ -9,6 +9,10 @@ globals:
       - type: bool
       - type: string
         required: false
+  assert.are.same:
+    args:
+      - type: any
+      - type: any
   after_each:
     args:
       - type: function

@@ -1,6 +1,5 @@
 local M = {}
 
-local lsp = require("yaml-companion.lsp.util")
 local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
 local conf = require("telescope.config").values
@@ -8,9 +7,9 @@ local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
 
 local yaml_schema = function(opts)
-  local results = lsp.get_all_yaml_schemas()
+  local results = require("yaml-companion.schema").all()
 
-  if results == nil then
+  if #results == 0 then
     return
   end
 
@@ -33,7 +32,7 @@ local yaml_schema = function(opts)
         actions.select_default:replace(function()
           actions.close(prompt_bufnr)
           local selection = action_state.get_selected_entry()
-          local schema = { result = { { name = selection.value.name, uri = selection.value.uri } } }
+          local schema = { name = selection.value.name, uri = selection.value.uri }
           require("yaml-companion.context").schema(0, schema)
         end)
         return true

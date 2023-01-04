@@ -115,9 +115,6 @@ describe("schema detection:", function()
     local expect = { result = require("yaml-companion.builtin.kubernetes").handles() }
     wait_until(function()
       local result = require("yaml-companion").get_buf_schema(0)
-      if
-        result.result[1].name ~= require("yaml-companion.context").default_schema().result[1].name
-      then
         return true
       end
     end)

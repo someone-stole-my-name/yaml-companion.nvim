@@ -27,4 +27,4 @@ docker-%:
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(shell pwd):/data \
 		-w /data $(DOCKER_EXTRA_ARGS) \
-		$(DOCKER_CI) sh -c "make packer && make $*"
+		$(DOCKER_CI) sh -c "rm -rf /root/.local/state && make packer && make $*"

@@ -28,3 +28,4 @@
 ---@class Logger
 ---@field fmt_debug fun(fmt: string, ...: any)
 ---@field fmt_error fun(fmt: string, ...: any)
+---@field warn fun(message: string)

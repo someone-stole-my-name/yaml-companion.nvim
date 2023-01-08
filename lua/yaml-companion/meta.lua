@@ -17,6 +17,7 @@
 ---@class Matcher
 ---@field match fun(bufnr: number): Schema | nil
 ---@field handles fun(): Schema[]
+---@field health fun()
 
 ---@class ConfigOptions
 ---@field log_level "debug" | "trace" | "info" | "warn" | "error" | "fatal"

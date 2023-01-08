@@ -20,6 +20,10 @@ matchers.manager = setmetatable({}, {
   __index = function(t, k)
     local m = load_matcher(k)
     t[k] = {
+      health = m.health or function()
+        local health = vim.health
+        health.report_info("No healthcheck provided")
+      end,
       match = m.match or function(_)
         return nil
       end,

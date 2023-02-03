@@ -110,11 +110,11 @@ require("yaml-companion").open_ui_select()
 You can show the current schema in your statusline using a function like:
 
 ```lua
-function foo()
+local function get_schema()
   local schema = require("yaml-companion").get_buf_schema(0)
-  if schema then
-    return schema.result[1].name
+  if schema.result[1].name == "none" then
+    return ""
   end
-  return ""
+  return schema.result[1].name
 end
 ```

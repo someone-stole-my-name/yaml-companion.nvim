@@ -13,7 +13,8 @@
 
 - Builtin Kubernetes manifest autodetection
 - Get/Set specific JSON schema per buffer
-- Extensible autodetection + Schema Store support 
+- Extensible autodetection + Schema Store support
+- Array sorting
 
 ## 📦 Installation
 

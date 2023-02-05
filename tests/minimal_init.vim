@@ -9,4 +9,7 @@ runtime! plugin/nvim-lspconfig.vim
 lua << EOF
 require("yaml-companion").load_matcher("dummy")
 vim.lsp.set_log_level("debug")
+
+local luarocks = require("packer.luarocks")
+luarocks.setup_paths()
 EOF

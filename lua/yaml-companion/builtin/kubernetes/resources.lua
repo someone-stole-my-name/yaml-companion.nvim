@@ -77,8 +77,6 @@ return {
   "PodList",
   "PodScheduling",
   "PodSchedulingList",
-  "PodSecurityPolicy",
-  "PodSecurityPolicyList",
   "PodTemplate",
   "PodTemplateList",
   "PriorityClass",

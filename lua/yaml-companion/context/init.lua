@@ -40,7 +40,7 @@ M.autodiscover = function(bufnr, client)
       "bufnr=%d client_id=%d schema=%s an SchemaStore defined schema matched this file",
       bufnr,
       client.id,
-      schema.name
+      current_schema.name
     )
     return M.ctxs[bufnr].schema
 

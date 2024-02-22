@@ -26,32 +26,32 @@ M.check = function()
     if not binary_installed(binary.bin) then
       local bin_not_installed = binary.bin .. " not found"
       if binary.optional then
-        health.report_warn(("%s %s"):format(bin_not_installed, binary.info))
+        health.warn(("%s %s"):format(bin_not_installed, binary.info))
       else
-        health.report_error(binary.bin .. " not found")
+        health.error(binary.bin .. " not found")
       end
     else
-      health.report_ok(binary.bin .. " found")
+      health.ok(binary.bin .. " found")
     end
   end
 
-  health.report_start("Checking for plugins")
+  health.start("Checking for plugins")
   for _, plugin in ipairs(plugins) do
     if lualib_installed(plugin.lib) then
-      health.report_ok(plugin.lib .. " installed")
+      health.ok(plugin.lib .. " installed")
     else
       local lib_not_installed = plugin.lib .. " not found"
       if plugin.optional then
-        health.report_warn(("%s %s"):format(lib_not_installed, plugin.info))
+        health.warn(("%s %s"):format(lib_not_installed, plugin.info))
       else
-        health.report_error(lib_not_installed)
+        health.error(lib_not_installed)
       end
     end
   end
 
   local matchers = require("yaml-companion._matchers")._loaded
   for name, matcher in pairs(matchers) do
-    health.report_start(string.format("Matcher: `%s`", name))
+    health.start(string.format("Matcher: `%s`", name))
     matcher.health()
   end
 end

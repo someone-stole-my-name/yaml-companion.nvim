@@ -22,7 +22,7 @@ matchers.manager = setmetatable({}, {
     t[k] = {
       health = m.health or function()
         local health = vim.health
-        health.report_info("No healthcheck provided")
+        health.info("No healthcheck provided")
       end,
       match = m.match or function(_)
         return nil

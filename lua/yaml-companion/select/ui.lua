@@ -1,8 +1,5 @@
 local M = {}
 
-local lsp = require("yaml-companion.lsp.util")
-local matchers = require("yaml-companion._matchers")._loaded
-
 --- Callback to be passed to vim.ui.select to display a single schema item
 --- @param schema table: Schema
 local display_schema_item = function(schema)
@@ -15,15 +12,15 @@ local select_schema = function(schema)
   if not schema then
     return
   end
-  local selected_schema = { result = { { name = schema.name, uri = schema.uri } } }
+  local selected_schema = { name = schema.name, uri = schema.uri }
   require("yaml-companion.context").schema(0, selected_schema)
 end
 
 M.open_ui_select = function()
-  local schemas = lsp.get_all_yaml_schemas()
+  local schemas = require("yaml-companion.schema").all()
 
   -- Don't open selection if there are no available schemas
-  if schemas == nil then
+  if #schemas == 0 then
     return
   end
 

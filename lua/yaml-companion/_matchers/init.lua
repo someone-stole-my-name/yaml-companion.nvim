@@ -1,5 +1,6 @@
 local matchers = {}
 
+---@type Matcher[]
 matchers._loaded = {}
 
 local load_matcher = function(name)
@@ -19,8 +20,12 @@ matchers.manager = setmetatable({}, {
   __index = function(t, k)
     local m = load_matcher(k)
     t[k] = {
-      match = m.match or function()
-        return false
+      health = m.health or function()
+        local health = vim.health
+        health.info("No healthcheck provided")
+      end,
+      match = m.match or function(_)
+        return nil
       end,
       handles = m.handles or function()
         return {}

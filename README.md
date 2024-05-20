@@ -12,8 +12,7 @@
 ## ✨ Features
 
 - Builtin Kubernetes manifest autodetection
-- Select specific JSON schema per buffer
-- Get the in-use schema
+- Get/Set specific JSON schema per buffer
 - Extensible autodetection + Schema Store support 
 
 ## 📦 Installation
@@ -46,16 +45,15 @@ use {
   builtin_matchers = {
     -- Detects Kubernetes files based on content
     kubernetes = { enabled = true },
+    cloud_init = { enabled = true }
   },
 
   -- Additional schemas available in Telescope picker
   schemas = {
-    result = {
-      --{
-      --  name = "Kubernetes 1.22.4",
-      --  uri = "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.22.4-standalone-strict/all.json",
-      --},
-    },
+    --{
+      --name = "Kubernetes 1.22.4",
+      --uri = "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.22.4-standalone-strict/all.json",
+    --},
   },
 
   -- Pass any additional options that will be merged in the final LSP config
@@ -112,11 +110,11 @@ require("yaml-companion").open_ui_select()
 You can show the current schema in your statusline using a function like:
 
 ```lua
-function foo()
+local function get_schema()
   local schema = require("yaml-companion").get_buf_schema(0)
-  if schema then
-    return schema.result[1].name
+  if schema.result[1].name == "none" then
+    return ""
   end
-  return ""
+  return schema.result[1].name
 end
 ```

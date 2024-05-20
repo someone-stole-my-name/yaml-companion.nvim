@@ -1,90 +1,121 @@
 local M = {}
 
-local default_schema = { result = { { name = "none", uri = "none" } } }
-local lsp = require("yaml-companion.lsp.requests")
+--local lsp = require("yaml-companion.lsp.requests")
 local matchers = require("yaml-companion._matchers")._loaded
+local schema = require("yaml-companion.schema")
 
-M.default_schema = function()
-  return default_schema
-end
+local log = require("yaml-companion.log")
 
+---@type { client: vim.lsp.client, schema: Schema, executed: boolean}[]
 M.ctxs = {}
 M.initialized_client_ids = {}
 
-M.store_initialized_handler = function(_, _, ctx, _)
-  local client_id = ctx.client_id
-  M.initialized_client_ids[client_id] = true
-
-  local client = vim.lsp.get_client_by_id(client_id)
-  local buffers = vim.lsp.get_buffers_by_client_id(client_id)
-
-  -- The store for this client_id has been initialized, we must check
-  -- all existing buffers and update then accordingly.
-  for _, bufnr in ipairs(buffers) do
-    if M.ctxs[bufnr] and M.ctxs[bufnr].executed == false then
-      M.autodiscover(bufnr, client)
-    end
-  end
-end
-
+---@param bufnr number
+---@param client vim.lsp.client
+---@return SchemaResult | nil
 M.autodiscover = function(bufnr, client)
-  if not M.initialized_client_ids[client.id] then
+  if not M.ctxs[bufnr] then
+    log.fmt_error("bufnr=%d client_id=%d doesn't exists", bufnr, client.id)
     return
   end
 
-  local schema = lsp.get_jsonschema(bufnr, client)
-  local options = require("yaml-companion.config").options
+  if not M.initialized_client_ids[client.id] then
+    log.fmt_debug("bufnr=%d client_id=%d is not yet initialized", bufnr, client.id)
+    return
+  end
 
-  if schema and schema.result and schema.result[1] and schema.result[1].uri then
-    -- if LSP returns a name that means it came from SchemaStore
-    -- and we can use it right away
-    if schema.result[1].name then
-      M.ctxs[bufnr].schema = schema
-      M.ctxs[bufnr].executed = true
+  if M.ctxs[bufnr].executed then
+    log.fmt_debug("bufnr=%d client_id=%d already executed", bufnr, client.id)
+    return M.ctxs[bufnr].schema
+  end
 
-      -- if it returned something without a name it means it came from our own
-      -- internal schema table and we have to loop through it to get the name
-    elseif options and options.schemas and options.schemas.result then
-      for _, option_schema in ipairs(options.schemas.result) do
-        if option_schema.uri == schema.result[1].uri then
-          M.ctxs[bufnr].schema = {
-            result = {
-              { name = option_schema.name, uri = option_schema.uri },
-            },
-          }
-          M.ctxs[bufnr].executed = true
-        end
-      end
-    end
+  M.ctxs[bufnr].executed = true
+  local current_schema = schema.current(bufnr)
 
-    -- if LSP is not using any schema, use registered matchers
+  -- if LSP returns a name that means it came from SchemaStore
+  -- and we can use it right away
+  if current_schema.name and current_schema.uri ~= schema.default().uri then
+    M.ctxs[bufnr].schema = current_schema
+    log.fmt_debug(
+      "bufnr=%d client_id=%d schema=%s an SchemaStore defined schema matched this file",
+      bufnr,
+      client.id,
+      schema.name
+    )
+    return M.ctxs[bufnr].schema
+
+    -- if it returned something without a name it means it came from our own
+    -- internal schema table and we have to loop through it to get the name
   else
-    for _, matcher in pairs(matchers) do
-      local result = matcher.match(bufnr)
-      if result then
-        M.schema(bufnr, {
-          result = {
-            { name = result.name, uri = result.uri },
-          },
-        })
-        M.ctxs[bufnr].executed = true
+    for _, option_schema in ipairs(schema.from_options()) do
+      if option_schema.uri == current_schema.uri then
+        M.ctxs[bufnr].schema = option_schema
+        log.fmt_debug(
+          "bufnr=%d client_id=%d schema=%s an user defined schema matched this file",
+          bufnr,
+          client.id,
+          option_schema.name
+        )
+        return M.ctxs[bufnr].schema
       end
     end
+    log.fmt_debug(
+      "bufnr=%d client_id=%d no user defined schema matched this file",
+      bufnr,
+      client.id
+    )
+  end
+
+  -- if LSP is not using any schema, use registered matchers
+  for _, matcher in pairs(matchers) do
+    local result = matcher.match(bufnr)
+    if result then
+      M.schema(bufnr, { name = result.name, uri = result.uri })
+      log.fmt_debug(
+        "bufnr=%d client_id=%d schema=%s a registered matcher matched this file",
+        bufnr,
+        client.id,
+        result.name
+      )
+      return M.ctxs[bufnr].schema
+    end
+
+    log.fmt_debug("bufnr=%d client_id=%d no registered matcher matched this file", bufnr, client.id)
   end
 
   -- No schema matched
-  M.ctxs[bufnr].executed = true
+  log.fmt_debug("bufnr=%d client_id=%d no registered schema matches", bufnr, client.id)
+
+  return {}
 end
 
+---@param bufnr number
+---@param client vim.lsp.client
 M.setup = function(bufnr, client)
   if client.name ~= "yamlls" then
     return
   end
 
+  -- The server does support formatting but it is disabled by default
+  -- https://github.com/redhat-developer/yaml-language-server/issues/486
+  if require("yaml-companion.config").options.formatting then
+    client.server_capabilities.documentFormattingProvider = true
+    client.server_capabilities.documentRangeFormattingProvider = true
+  end
+
+  -- remove yamlls from not yaml files
+  -- https://github.com/towolf/vim-helm/issues/15
+  if vim.bo[bufnr].buftype ~= "" or vim.bo[bufnr].filetype == "helm" then
+    vim.diagnostic.disable(bufnr)
+    vim.defer_fn(function()
+      vim.diagnostic.reset(nil, bufnr)
+    end, 1000)
+    vim.lsp.buf_detach_client(bufnr, client.id)
+  end
+
   local state = {
-    bufnr = bufnr,
     client = client,
-    schema = default_schema,
+    schema = schema.default(),
     executed = false,
   }
 
@@ -93,25 +124,33 @@ M.setup = function(bufnr, client)
   -- The first time this won't work because the client is not initialized yet
   -- but it will be called once per client from the initialized_handler when it is.
   M.autodiscover(bufnr, client)
-
-  return lsp.support_schema_selection(bufnr, client)
 end
 
-M.schema = function(bufnr, schema)
+--- gets or sets the schema in its context and lsp
+---@param bufnr number
+---@param new_schema Schema | SchemaResult | nil
+---@return Schema
+M.schema = function(bufnr, new_schema)
   if bufnr == 0 then
     bufnr = vim.api.nvim_get_current_buf()
   end
 
   if M.ctxs[bufnr] == nil then
-    return default_schema
+    return schema.default()
   end
 
-  if schema then
-    M.ctxs[bufnr].schema = schema
+  -- TODO: Just here because set_buf_schema also accepts a SchemaResult
+  -- remove once set_buf_schema is only accepts Schema
+  if new_schema and new_schema.result and new_schema.result[1] then
+    new_schema = new_schema.result[1]
+  end
+
+  if new_schema and new_schema.uri and new_schema.name then
+    M.ctxs[bufnr].schema = new_schema
 
     local bufuri = vim.uri_from_bufnr(bufnr)
     local client = M.ctxs[bufnr].client
-    local settings = M.ctxs[bufnr].client.config.settings
+    local settings = client.config.settings
 
     -- we don't want more than 1 schema per file
     for key, _ in pairs(settings.yaml.schemas) do
@@ -121,10 +160,13 @@ M.schema = function(bufnr, schema)
     end
 
     local override = {}
-    override[schema.result[1].uri] = bufuri
+    override[new_schema.uri] = bufuri
+
+    log.fmt_debug("file=%s schema=%s set new override", bufuri, new_schema.uri)
+
     settings = vim.tbl_deep_extend("force", settings, { yaml = { schemas = override } })
     client.config.settings =
-    vim.tbl_deep_extend("force", settings, { yaml = { schemas = override } })
+      vim.tbl_deep_extend("force", settings, { yaml = { schemas = override } })
     client.workspace_did_change_configuration(client.config.settings)
   end
 

@@ -1,9 +1,15 @@
 local M = {}
 local matchers = require("yaml-companion._matchers")
+local handlers = require("vim.lsp.handlers")
+local add_hook_after = require("lspconfig.util").add_hook_after
 
+---@type ConfigOptions
 M.defaults = {
+  log_level = "info",
+  formatting = true,
   builtin_matchers = {
     kubernetes = { enabled = true },
+    cloud_init = { enabled = true },
   },
   schemas = {},
   lspconfig = {
@@ -29,6 +35,7 @@ M.defaults = {
   },
 }
 
+---@type ConfigOptions
 M.options = {}
 
 function M.setup(options, on_attach)
@@ -39,25 +46,25 @@ function M.setup(options, on_attach)
   if options.lspconfig == nil then
     options.lspconfig = {}
   end
-  -- hijack the user supplied on_attach callback to also call our own on_attach
-  if options.lspconfig.on_attach then
-    options.real_on_attach = options.lspconfig.on_attach
-  end
-
-  options.lspconfig.on_attach = function(client, bufnr)
-    if M.options.real_on_attach then
-      M.options.real_on_attach(client, bufnr)
-    end
-    on_attach(client, bufnr)
-  end
 
   M.options = vim.tbl_deep_extend("force", {}, M.defaults, options or {})
+
+  M.options.lspconfig.on_attach = add_hook_after(options.lspconfig.on_attach, on_attach)
+
+  M.options.lspconfig.on_init = add_hook_after(options.lspconfig.on_init, function(client)
+    client.notify("yaml/supportSchemaSelection", { {} })
+    return true
+  end)
 
   for name, matcher in pairs(M.options.builtin_matchers) do
     if matcher.enabled then
       matchers.load(name)
     end
   end
+
+  handlers["yaml/schema/store/initialized"] =
+    require("yaml-companion.lsp.handler").store_initialized
+  M.options.lspconfig.handlers = handlers
 end
 
 return M

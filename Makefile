@@ -1,8 +1,7 @@
-NEOVIM_VERSION=0.7.0
 KUBERNETES_VERSION=1.22.4
+DOCKER_CI=ghcr.io/someone-stole-my-name/yaml.nvim-ci:0.8.0
 
 lint:
-	hadolint Dockerfile
 	stylua -c .
 
 test: lint
@@ -21,14 +20,11 @@ generate_kubernetes_resources:
 generate_kubernetes_version:
 	perl resources/scripts/generate_kubernetes_version.pl ${KUBERNETES_VERSION} > lua/yaml-companion/builtin/kubernetes/version.lua
 
-docker-build:
-	docker build -t ci --build-arg NEOVIM_VERSION=${NEOVIM_VERSION} -f Dockerfile .
-
-docker-%: docker-build
+docker-%:
 	docker run \
 		--rm \
 		--privileged \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(shell pwd):/data \
 		-w /data $(DOCKER_EXTRA_ARGS) \
-		ci sh -c "make packer && make $*"
+		$(DOCKER_CI) sh -c "rm -rf /root/.local/state && make packer && make $*"

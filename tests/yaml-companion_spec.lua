@@ -25,9 +25,12 @@ local function buf(input, ft, name)
 end
 
 describe("schema detection:", function()
+  local yamlconfig = require("yaml-companion").setup()
+  require("lspconfig")["yamlls"].setup(yamlconfig)
+
   it("should detect default schema right after start", function()
     assert(buf("", "yaml", ".gitlab-ci.yml"))
-    local expect = require("yaml-companion.context").default_schema()
+    local expect = { result = { require("yaml-companion.schema").default() } }
     local result = require("yaml-companion").get_buf_schema(0)
     assert.are.same(expect, result)
   end)
@@ -35,9 +38,7 @@ describe("schema detection:", function()
   it("should detect 'gitlab-ci' schema", function()
     wait_until(function()
       local result = require("yaml-companion").get_buf_schema(0)
-      if
-        result.result[1].name ~= require("yaml-companion.context").default_schema().result[1].name
-      then
+      if result.result[1].name ~= require("yaml-companion.schema").default().name then
         return true
       end
     end)
@@ -61,7 +62,7 @@ describe("schema detection:", function()
         {
           description = "Ansible playbook files",
           name = "Ansible Playbook",
-          uri = "https://raw.githubusercontent.com/ansible-community/schemas/main/f/ansible.json#/definitions/playbook",
+          uri = "https://raw.githubusercontent.com/ansible-community/schemas/main/f/ansible.json#/$defs/playbook",
         },
       },
     }
@@ -87,15 +88,13 @@ describe("schema detection:", function()
         {
           description = "Ansible playbook files",
           name = "Ansible Playbook",
-          uri = "https://raw.githubusercontent.com/ansible-community/schemas/main/f/ansible.json#/$defs/playbook",
+          uri = "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/ansible.json#/$defs/playbook",
         },
       },
     }
     wait_until(function()
       local result = require("yaml-companion").get_buf_schema(0)
-      if
-        result.result[1].name ~= require("yaml-companion.context").default_schema().result[1].name
-      then
+      if result.name ~= require("yaml-companion.schema").default().name then
         return true
       end
     end)
@@ -112,12 +111,10 @@ describe("schema detection:", function()
         "foo.yml"
       )
     )
-    local expect = { result = require("yaml-companion.builtin.kubernetes").handles() }
+    local expect = { result = { require("yaml-companion.builtin.kubernetes").handles()[1] } }
     wait_until(function()
       local result = require("yaml-companion").get_buf_schema(0)
-      if
-        result.result[1].name ~= require("yaml-companion.context").default_schema().result[1].name
-      then
+      if result.name ~= require("yaml-companion.schema").default().name then
         return true
       end
     end)
@@ -131,11 +128,14 @@ describe("schema detection:", function()
       'Incorrect type. Expected "string".',
     }
 
-    wait_until(function()
-      if #vim.diagnostic.get() == 2 then
-        return true
-      end
-    end)
+    assert.are.same(
+      true,
+      wait_until(function()
+        if #vim.diagnostic.get() == 2 then
+          return true
+        end
+      end)
+    )
 
     for index, value in ipairs(vim.diagnostic.get()) do
       assert.are.same(expect[index], value.message)
@@ -143,14 +143,12 @@ describe("schema detection:", function()
     vim.api.nvim_buf_delete(0, { force = true })
   end)
 
-  it("should detect dummy using the external dummy matcher", function()
+  it("should detect dummy using dummy matcher", function()
     assert(buf("test: true\n", "yaml", "dummy.yml"))
     local expect = { result = require("yaml-companion._matchers.dummy").handles() }
     wait_until(function()
       local result = require("yaml-companion").get_buf_schema(0)
-      if
-        result.result[1].name ~= require("yaml-companion.context").default_schema().result[1].name
-      then
+      if result.result[1].name ~= require("yaml-companion.schema").default().name then
         return true
       end
     end)

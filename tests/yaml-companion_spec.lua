@@ -17,7 +17,9 @@ local function buf(input, ft, name)
   vim.api.nvim_command("buffer " .. b)
   vim.api.nvim_buf_set_lines(b, 0, -1, true, vim.split(input, "\n"))
   return wait_until(function()
-    local clients = vim.lsp.get_clients()
+    ---@diagnostic disable-next-line: deprecated
+    local get_clients = vim.lsp.get_clients and vim.lsp.get_clients or vim.lsp.get_active_clients
+    local clients = get_clients()
     if #clients > 0 then
       return true
     end

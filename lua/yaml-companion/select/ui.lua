@@ -26,7 +26,7 @@ M.open_ui_select = function()
 
   vim.ui.select(
     schemas,
-    { format_item = display_schema_item, prompt = "Select YAML Schema" },
+    { format_item = display_schema_item, prompt = "Select YAML Schema: " },
     select_schema
   )
 end

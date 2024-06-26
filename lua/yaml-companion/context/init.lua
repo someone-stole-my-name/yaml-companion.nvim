@@ -106,7 +106,7 @@ M.setup = function(bufnr, client)
   -- remove yamlls from not yaml files
   -- https://github.com/towolf/vim-helm/issues/15
   if vim.bo[bufnr].buftype ~= "" or vim.bo[bufnr].filetype == "helm" then
-    vim.diagnostic.disable(bufnr)
+    vim.diagnostic.enable(false, { bufnr = bufnr })
     vim.defer_fn(function()
       vim.diagnostic.reset(nil, bufnr)
     end, 1000)
@@ -145,7 +145,7 @@ M.schema = function(bufnr, new_schema)
     new_schema = new_schema.result[1]
   end
 
-  if new_schema and new_schema.uri and new_schema.name then
+  if new_schema and new_schema.uri then
     M.ctxs[bufnr].schema = new_schema
 
     local bufuri = vim.uri_from_bufnr(bufnr)

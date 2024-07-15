@@ -51,19 +51,6 @@ function M.setup(options, on_attach)
 
   M.options.lspconfig.on_attach = add_hook_after(options.lspconfig.on_attach, on_attach)
 
-  local all_schemas = vim.deepcopy(M.options.schemas)
-  local collected_uris = {}
-  M.options.schemas = {}
-  for _, schema in pairs(all_schemas) do
-    if not schema.uri then
-      schema.uri = schema.url
-    end
-    if not collected_uris[schema.uri] then
-      vim.list_extend(M.options.schemas, { schema })
-      collected_uris[schema.uri] = true
-    end
-  end
-
   M.options.lspconfig.on_init = add_hook_after(options.lspconfig.on_init, function(client)
     client.notify("yaml/supportSchemaSelection", { {} })
     return true

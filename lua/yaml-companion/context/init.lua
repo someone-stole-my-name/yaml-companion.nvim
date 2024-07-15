@@ -145,7 +145,7 @@ M.schema = function(bufnr, new_schema)
     new_schema = new_schema.result[1]
   end
 
-  if new_schema and new_schema.uri then
+  if new_schema and new_schema.uri and new_schema.name then
     M.ctxs[bufnr].schema = new_schema
 
     local bufuri = vim.uri_from_bufnr(bufnr)

@@ -7,7 +7,9 @@ local sync_timeout = 5000
 ---@param bufnr number
 ---@return vim.lsp.client | nil
 M.get_client = function(bufnr)
-  return vim.lsp.get_active_clients({ name = "yamlls", bufnr = bufnr })[1]
+  ---@diagnostic disable-next-line: deprecated
+  local get_clients = vim.lsp.get_clients and vim.lsp.get_clients or vim.lsp.get_active_clients
+  return get_clients({ name = "yamlls", bufnr = bufnr })[1]
 end
 
 ---@param bufnr number

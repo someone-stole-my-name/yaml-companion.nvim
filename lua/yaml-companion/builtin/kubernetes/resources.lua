@@ -16,8 +16,6 @@ return {
   "CSIStorageCapacityList",
   "CertificateSigningRequest",
   "CertificateSigningRequestList",
-  "ClusterCIDR",
-  "ClusterCIDRList",
   "ClusterRole",
   "ClusterRoleBinding",
   "ClusterRoleBindingList",

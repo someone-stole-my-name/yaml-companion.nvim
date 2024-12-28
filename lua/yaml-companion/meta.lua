@@ -1,12 +1,7 @@
 ---@meta
 
----@class vim.lsp.client
----@field id number
----@field name string
----@field server_capabilities table
----@field config table
+---@class vim.lsp.Client
 ---@field workspace_did_change_configuration fun(settings: table)
----@field request_sync fun(method: string, params: table | nil, timeout_ms: number | nil, bufnr: number): { err: string, result: string} | nil, string
 
 ---@class Schema
 ---@field name string | nil
@@ -30,3 +25,4 @@
 ---@field fmt_debug fun(fmt: string, ...: any)
 ---@field fmt_error fun(fmt: string, ...: any)
 ---@field warn fun(message: string)
+---@field new fun(config: table, standalone: boolean): Logger

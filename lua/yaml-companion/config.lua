@@ -36,7 +36,7 @@ M.defaults = {
 }
 
 ---@type ConfigOptions
-M.options = {}
+M.options = vim.deepcopy(M.defaults)
 
 function M.setup(options, on_attach)
   if options == nil then
@@ -47,7 +47,7 @@ function M.setup(options, on_attach)
     options.lspconfig = {}
   end
 
-  M.options = vim.tbl_deep_extend("force", {}, M.defaults, options or {})
+  M.options = vim.tbl_deep_extend("force", M.options, options or {})
 
   M.options.lspconfig.on_attach = add_hook_after(options.lspconfig.on_attach, on_attach)
 

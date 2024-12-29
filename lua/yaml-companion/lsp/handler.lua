@@ -2,14 +2,13 @@ local M = {}
 
 local log = require("yaml-companion.log")
 
---local custom_schema_content_cache = {}
-
 M.store_initialized = function(_, _, req, _)
   local client_id = req.client_id
 
   require("yaml-companion").ctx.initialized_client_ids[client_id] = true
 
   local client = vim.lsp.get_client_by_id(client_id)
+  assert(client, "Client not found for client_id: " .. client_id)
   local buffers = vim.lsp.get_buffers_by_client_id(client_id)
 
   for _, bufnr in ipairs(buffers) do

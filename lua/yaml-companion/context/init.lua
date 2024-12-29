@@ -6,12 +6,12 @@ local schema = require("yaml-companion.schema")
 
 local log = require("yaml-companion.log")
 
----@type { client: vim.lsp.client, schema: Schema, executed: boolean}[]
+---@type { client: vim.lsp.Client, schema: Schema, executed: boolean}[]
 M.ctxs = {}
 M.initialized_client_ids = {}
 
 ---@param bufnr number
----@param client vim.lsp.client
+---@param client vim.lsp.Client
 ---@return SchemaResult | nil
 M.autodiscover = function(bufnr, client)
   if not M.ctxs[bufnr] then
@@ -90,7 +90,7 @@ M.autodiscover = function(bufnr, client)
 end
 
 ---@param bufnr number
----@param client vim.lsp.client
+---@param client vim.lsp.Client
 M.setup = function(bufnr, client)
   if client.name ~= "yamlls" then
     return
@@ -106,7 +106,7 @@ M.setup = function(bufnr, client)
   -- remove yamlls from not yaml files
   -- https://github.com/towolf/vim-helm/issues/15
   if vim.bo[bufnr].buftype ~= "" or vim.bo[bufnr].filetype == "helm" then
-    vim.diagnostic.disable(bufnr)
+    vim.diagnostic.enable(false, { bufnr = bufnr })
     vim.defer_fn(function()
       vim.diagnostic.reset(nil, bufnr)
     end, 1000)

@@ -52,7 +52,7 @@ function M.setup(options, on_attach)
   M.options.lspconfig.on_attach = add_hook_after(options.lspconfig.on_attach, on_attach)
 
   M.options.lspconfig.on_init = add_hook_after(options.lspconfig.on_init, function(client)
-    client.notify("yaml/supportSchemaSelection", { {} })
+    client:notify("yaml/supportSchemaSelection", { {} })
     return true
   end)
 
